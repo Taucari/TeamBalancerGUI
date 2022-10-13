@@ -25,7 +25,7 @@ class MainGUI(tk.Tk):
         tk.Tk.__init__(self)
         self.geometry("1280x720")
         self.title('Elo Team Balancer')
-        self.configure(background='black')
+        self.configure(background='dark blue')
 
         # Margin grid config
         self.grid_columnconfigure(0, weight=1)
@@ -35,9 +35,9 @@ class MainGUI(tk.Tk):
 
         # Centre grid config
         self.grid_columnconfigure(1, weight=16)
-        self.grid_columnconfigure(2, weight=4)
+        self.grid_columnconfigure(2, weight=1)
         self.grid_columnconfigure(3, weight=16)
-        self.grid_rowconfigure(1, weight=8)
+        self.grid_rowconfigure(1, weight=16)
 
         # Config for left frame containing input data
         self.table_frame = tk.Frame(self, bg='blue')
@@ -52,9 +52,10 @@ class MainGUI(tk.Tk):
         self.button_frame.grid_rowconfigure(1, weight=1)
 
         # Config for right frame containing result data
-        self.output_frame = tk.Frame(self, bg='green')
+        self.output_frame = tk.Frame(self)
         self.output_frame.grid_columnconfigure(0, weight=1)
         self.output_frame.grid_rowconfigure(0, weight=1)
+        self.output_frame.grid_rowconfigure(1, weight=9)
 
         # Placement of main three frames
         self.table_frame.grid(row=1, column=1, sticky="nswe")
@@ -65,18 +66,25 @@ class MainGUI(tk.Tk):
         self.input_sheet_title = ttk.Label(self.table_frame, text="Input Table of Players")
         self.input_sheet_title.grid(row=0, column=0)
 
+        self.input_sheet_frame = tk.Frame(self.table_frame)
+        self.input_sheet_frame.grid(row=1, column=0, sticky="nswe")
+        self.input_sheet_frame.grid_columnconfigure(0, weight=1)
+        self.input_sheet_frame.grid_rowconfigure(0, weight=1)
+
         # Input table
-        self.input_sheet = Sheet(self.table_frame,
+        self.input_sheet = Sheet(self.input_sheet_frame,
                                  empty_horizontal=0,
                                  empty_vertical=0,
                                  total_columns=3,
                                  paste_insert_column_limit=3,
-                                 align="w",
+                                 align="center",
                                  header_align="c",
                                  headers=["IGN", "Avg. Elo", "Elos"],
                                  data=[["" for _ in range(3)] for _ in range(12)],
                                  height=self.table_frame.winfo_height(),
-                                 width=self.table_frame.winfo_width())
+                                 width=self.table_frame.winfo_width(),
+                                 theme="dark",
+                                 enable_edit_cell_auto_resize=True)
         self.input_sheet.set_all_cell_sizes_to_text(redraw=True)
         self.input_sheet.total_columns(3)
         self.input_sheet.hide(canvas="top_left")
@@ -87,12 +95,16 @@ class MainGUI(tk.Tk):
                                           "rc_insert_row",
                                           "rc_delete_row")
         self.input_sheet.set_column_widths(column_widths=[120, 60, 240])
-        self.input_sheet.grid(row=1, column=0, sticky="nswe")
+        self.input_sheet.grid(row=0, column=0, sticky="nswe")
 
         # Middle Button Strip
         # Input Control Frame
         self.input_control_frame = tk.LabelFrame(self.button_frame, text="Input Table Controls")
         self.input_control_frame.grid(row=0, column=0, sticky="we")
+        self.input_control_frame.configure(background="red")
+        self.input_control_frame.grid_columnconfigure(0, weight=1)
+        self.input_control_frame.grid_rowconfigure(0, weight=1)
+        self.input_control_frame.grid_rowconfigure(1, weight=1)
 
         # Row Count, Increment and Decrement Frame
         self.adjust_row_amount_frame = tk.Frame(self.input_control_frame)
@@ -149,10 +161,15 @@ class MainGUI(tk.Tk):
         # Compute Control Label Frame
         self.compute_control_frame = tk.LabelFrame(self.button_frame, text="Compute Controls")
         self.compute_control_frame.grid(row=1, column=0, sticky="we")
+        self.compute_control_frame.configure(background="purple")
+        self.compute_control_frame.grid_columnconfigure(0, weight=1)
+        self.compute_control_frame.grid_rowconfigure(0, weight=1)
+        self.compute_control_frame.grid_rowconfigure(1, weight=1)
 
         # Compute Control Selection and Compute Button Frame
         self.compute_selection_frame = tk.Frame(self.compute_control_frame)
         self.compute_selection_frame.grid(row=0, column=0)
+        self.compute_selection_frame.configure(background="green")
 
         # Compute Selection Control Label
         self.compute_selection_label = tk.Label(self.compute_selection_frame, text="Type:")
@@ -171,17 +188,26 @@ class MainGUI(tk.Tk):
         self.compute_selection = tk.Button(self.compute_selection_frame, text="Compute")
         self.compute_selection.grid(row=0, column=2)
 
+        # Compute Control Selection and Compute Button Frame
+        self.compute_bar_frame = tk.Frame(self.compute_control_frame)
+        self.compute_bar_frame.grid(row=1, column=0)
+        self.compute_bar_frame.configure(background="blue")
+
         # Compute Progress Bar
-        self.compute_progress_bar = ttk.Progressbar(self.compute_control_frame,
+        self.compute_progress_bar = ttk.Progressbar(self.compute_bar_frame,
                                                     orient='horizontal',
                                                     mode='determinate',
-                                                    length=240)
+                                                    length=200)
         self.compute_progress_bar.grid(row=1, column=0)
 
+        # Output Label
+        self.output_text_title = ttk.Label(self.output_frame, text="Output Result")
+        self.output_text_title.grid(row=0, column=0)
+
         # Output Text Box
-        self.output_text = tk.Text(self.output_frame, width=1, bd=5)
+        self.output_text = tk.Text(self.output_frame, width=1)
         self.output_text.configure(state="disabled")
-        self.output_text.grid(row=0, column=0, sticky="nswe")
+        self.output_text.grid(row=1, column=0, sticky="nswe")
         self.output_text.bind("<Key>", lambda e: ctrlEvent(e))
 
     def incrementEntry(self):
