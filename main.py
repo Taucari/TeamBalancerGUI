@@ -49,8 +49,9 @@ class MainGUI(tk.Tk):
         self.button_frame = tk.Frame(self, bg='yellow')
         self.button_frame.grid_columnconfigure(0, weight=1)
         self.button_frame.grid_rowconfigure(0, weight=1)
+        self.button_frame.grid_rowconfigure(1, weight=1)
 
-        # Config for left frame containing result data
+        # Config for right frame containing result data
         self.output_frame = tk.Frame(self, bg='green')
         self.output_frame.grid_columnconfigure(0, weight=1)
         self.output_frame.grid_rowconfigure(0, weight=1)
@@ -89,8 +90,9 @@ class MainGUI(tk.Tk):
         self.input_sheet.grid(row=1, column=0, sticky="nswe")
 
         # Middle Button Strip
+        # Input Control Frame
         self.input_control_frame = tk.LabelFrame(self.button_frame, text="Input Table Controls")
-        self.input_control_frame.grid(row=0, column=0)
+        self.input_control_frame.grid(row=0, column=0, sticky="we")
 
         # Row Count, Increment and Decrement Frame
         self.adjust_row_amount_frame = tk.Frame(self.input_control_frame)
@@ -122,7 +124,7 @@ class MainGUI(tk.Tk):
                                                              width=2)
         self.adjust_row_amount_decrement_button.grid(row=0, column=3)
 
-        # Frame for Load and Save Button
+        # Frame for Load and Save and Reset Button
         self.load_and_save_frame = tk.Frame(self.input_control_frame)
         self.load_and_save_frame.grid(row=1, column=0)
 
@@ -139,10 +141,42 @@ class MainGUI(tk.Tk):
         self.save_player_input_table_button.grid(row=0, column=1)
 
         # Reset Button
-        self.reset_input_button = ttk.Button(self.input_control_frame,
-                                             text="Reset Input Table",
+        self.reset_input_button = ttk.Button(self.load_and_save_frame,
+                                             text="Reset",
                                              command=self.resetInputTable)
-        self.reset_input_button.grid(row=2, column=0)
+        self.reset_input_button.grid(row=0, column=2)
+
+        # Compute Control Label Frame
+        self.compute_control_frame = tk.LabelFrame(self.button_frame, text="Compute Controls")
+        self.compute_control_frame.grid(row=1, column=0, sticky="we")
+
+        # Compute Control Selection and Compute Button Frame
+        self.compute_selection_frame = tk.Frame(self.compute_control_frame)
+        self.compute_selection_frame.grid(row=0, column=0)
+
+        # Compute Selection Control Label
+        self.compute_selection_label = tk.Label(self.compute_selection_frame, text="Type:")
+        self.compute_selection_label.grid(row=0, column=0)
+
+        # Compute Selection Control
+        self.compute_selection = ttk.Combobox(self.compute_selection_frame,
+                                              justify="center",
+                                              state="readonly",
+                                              values=['Standard', 'Random'],
+                                              width=8)
+        self.compute_selection.current(0)
+        self.compute_selection.grid(row=0, column=1)
+
+        # Compute Button
+        self.compute_selection = tk.Button(self.compute_selection_frame, text="Compute")
+        self.compute_selection.grid(row=0, column=2)
+
+        # Compute Progress Bar
+        self.compute_progress_bar = ttk.Progressbar(self.compute_control_frame,
+                                                    orient='horizontal',
+                                                    mode='determinate',
+                                                    length=240)
+        self.compute_progress_bar.grid(row=1, column=0)
 
         # Output Text Box
         self.output_text = tk.Text(self.output_frame, width=1, bd=5)
@@ -167,7 +201,6 @@ class MainGUI(tk.Tk):
             messagebox.showerror("Error", "The input table can not have less than 1 player.")
             self.incrementEntry()
         else:
-
             if int(self.adjust_row_amount_textbox_input_display.get()) > self.input_sheet.get_total_rows():
                 self.input_sheet.insert_rows(
                     rows=int(self.adjust_row_amount_textbox_input_display.get()) - self.input_sheet.get_total_rows(),
