@@ -1,7 +1,23 @@
 from tksheet import Sheet
+import ast
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox as messagebox
+import tkinter.filedialog as fd
+
+
+def numerical_entry_callback(P):
+    if str.isdigit(P) or P == "":
+        return True
+    else:
+        return False
+
+
+def ctrlEvent(event):
+    if 12 == event.state and event.keysym == 'c':
+        return
+    else:
+        return "break"
 
 
 class MainGUI(tk.Tk):
@@ -9,6 +25,7 @@ class MainGUI(tk.Tk):
         tk.Tk.__init__(self)
         self.geometry("1280x720")
         self.title('Elo Team Balancer')
+        self.configure(background='black')
 
         # Margin grid config
         self.grid_columnconfigure(0, weight=1)
@@ -75,56 +92,63 @@ class MainGUI(tk.Tk):
         self.input_control_frame = tk.LabelFrame(self.button_frame, text="Input Table Controls")
         self.input_control_frame.grid(row=0, column=0)
 
+        # Row Count, Increment and Decrement Frame
         self.adjust_row_amount_frame = tk.Frame(self.input_control_frame)
         self.adjust_row_amount_frame.grid(row=0, column=0)
 
+        # Row Count Label
         self.adjust_row_amount_label = ttk.Label(self.adjust_row_amount_frame, text="Number of Players: ")
         self.adjust_row_amount_label.grid(row=0, column=0)
 
-        self.vcmd = (self.register(self.numerical_entry_callback))
+        # Row Count Display
+        self.vcmd = (self.register(numerical_entry_callback))
         self.adjust_row_amount_textbox_input_display = tk.Entry(self.adjust_row_amount_frame, validate='all',
                                                                 validatecommand=(self.vcmd, '%P'), width=4)
         self.adjust_row_amount_textbox_input_display.bind('<Return>', self.setTableLength)
         self.adjust_row_amount_textbox_input_display.insert(tk.END, '12')
         self.adjust_row_amount_textbox_input_display.grid(row=0, column=1)
 
+        # Increase Table Row Count
         self.adjust_row_amount_increment_button = ttk.Button(self.adjust_row_amount_frame,
                                                              text="+",
                                                              command=self.incrementEntry,
                                                              width=2)
         self.adjust_row_amount_increment_button.grid(row=0, column=2)
 
+        # Decrease Table Row Count
         self.adjust_row_amount_decrement_button = ttk.Button(self.adjust_row_amount_frame,
                                                              text="-",
                                                              command=self.decrementEntry,
                                                              width=2)
         self.adjust_row_amount_decrement_button.grid(row=0, column=3)
 
+        # Frame for Load and Save Button
         self.load_and_save_frame = tk.Frame(self.input_control_frame)
         self.load_and_save_frame.grid(row=1, column=0)
 
-        self.load_player_input_table_button = ttk.Button(self.load_and_save_frame, text="Load")
+        # Load Button
+        self.load_player_input_table_button = ttk.Button(self.load_and_save_frame,
+                                                         text="Load",
+                                                         command=self.load_input_table)
         self.load_player_input_table_button.grid(row=0, column=0)
 
-        self.save_player_input_table_button = ttk.Button(self.load_and_save_frame, text="Save")
+        # Save Button
+        self.save_player_input_table_button = ttk.Button(self.load_and_save_frame,
+                                                         text="Save",
+                                                         command=self.save_input_table)
         self.save_player_input_table_button.grid(row=0, column=1)
 
+        # Reset Button
         self.reset_input_button = ttk.Button(self.input_control_frame,
                                              text="Reset Input Table",
                                              command=self.resetInputTable)
         self.reset_input_button.grid(row=2, column=0)
 
-        # # Output table
-        # self.output_sheet = Sheet(self.output_frame, show_x_scrollbar=False,
-        #                           data=[[f"{r}, {c}" for c in range(3)] for r in range(12)])
-        # self.output_sheet.enable_bindings()
-        # self.output_sheet.grid(row=0, column=0, sticky="nswe")
-
-    def numerical_entry_callback(self, P):
-        if str.isdigit(P) or P == "":
-            return True
-        else:
-            return False
+        # Output Text Box
+        self.output_text = tk.Text(self.output_frame, width=1, bd=5)
+        self.output_text.configure(state="disabled")
+        self.output_text.grid(row=0, column=0, sticky="nswe")
+        self.output_text.bind("<Key>", lambda e: ctrlEvent(e))
 
     def incrementEntry(self):
         entry_data = int(self.adjust_row_amount_textbox_input_display.get())
@@ -163,6 +187,22 @@ class MainGUI(tk.Tk):
         self.input_sheet.set_column_widths(column_widths=[120, 60, 240])
         self.input_sheet.recreate_all_selection_boxes()
         self.input_sheet.refresh(redraw_header=True, redraw_row_index=True)
+
+    def save_input_table(self):
+        file = fd.asksaveasfile(defaultextension='.txt', filetypes=[("Text file", ".txt"), ("All files", "*.*")])
+        data = [x for x in self.input_sheet.get_sheet_data(return_copy=True, get_header=False, get_index=False) if
+                x != ['', '', '']]
+        file.write(str(data))
+        file.close()
+
+    def load_input_table(self):
+        filename = fd.askopenfilename(filetypes=(("Text file", ".txt"), ("All files", "*.*")))
+        if filename:
+            with open(filename) as file:
+                data = ast.literal_eval(file.read())
+                self.input_sheet.set_sheet_data(data=data, redraw=True, verify=True)
+                self.adjust_row_amount_textbox_input_display.delete(0, tk.END)
+                self.adjust_row_amount_textbox_input_display.insert(tk.END, str(len(data)))
 
 
 app = MainGUI()
