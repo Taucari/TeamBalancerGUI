@@ -1,4 +1,5 @@
 from tksheet import Sheet
+from compute import main_compute
 import ast
 import tkinter as tk
 import tkinter.ttk as ttk
@@ -6,8 +7,8 @@ import tkinter.messagebox as messagebox
 import tkinter.filedialog as fd
 
 
-def numerical_entry_callback(P):
-    if str.isdigit(P) or P == "":
+def numerical_entry_callback(p):
+    if str.isdigit(p) or p == "":
         return True
     else:
         return False
@@ -23,6 +24,11 @@ def ctrlEvent(event):
 class MainGUI(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
+
+        self.compute_options = {0: 'Standard', 1: 'Random'}
+        self.compute_mode = 0
+        self.player_data = {}
+
         self.geometry("1280x720")
         self.title('Elo Team Balancer')
         self.configure(background='dark blue')
@@ -179,14 +185,17 @@ class MainGUI(tk.Tk):
         self.compute_selection = ttk.Combobox(self.compute_selection_frame,
                                               justify="center",
                                               state="readonly",
-                                              values=['Standard', 'Random'],
+                                              values=[*self.compute_options.values()],
                                               width=8)
         self.compute_selection.current(0)
         self.compute_selection.grid(row=0, column=1)
 
         # Compute Button
-        self.compute_selection = tk.Button(self.compute_selection_frame, text="Compute")
-        self.compute_selection.grid(row=0, column=2)
+        self.compute_button = tk.Button(self.compute_selection_frame,
+                                        text="Compute",
+                                        command=self.compute)
+
+        self.compute_button.grid(row=0, column=2)
 
         # Compute Control Selection and Compute Button Frame
         self.compute_bar_frame = tk.Frame(self.compute_control_frame)
@@ -262,6 +271,13 @@ class MainGUI(tk.Tk):
                 self.input_sheet.set_sheet_data(data=data, redraw=True, verify=True)
                 self.adjust_row_amount_textbox_input_display.delete(0, tk.END)
                 self.adjust_row_amount_textbox_input_display.insert(tk.END, str(len(data)))
+
+    def compute(self):
+        self.compute_mode = self.compute_selection.current()
+        raw = [x for x in self.input_sheet.get_sheet_data(return_copy=True, get_header=False, get_index=False) if
+               x != ['', '', '']]
+        self.player_data = {x[0]: int(x[1]) for x in raw}
+        main_compute(self.compute_mode, self.player_data)
 
 
 app = MainGUI()
