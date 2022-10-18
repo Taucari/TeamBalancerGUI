@@ -27,6 +27,7 @@ class MainGUI(tk.Tk):
 
         self.compute_options = {0: 'Standard', 1: 'Random'}
         self.compute_mode = 0
+        self.team_size = 1
         self.player_data = {}
 
         self.geometry("1280x720")
@@ -171,6 +172,7 @@ class MainGUI(tk.Tk):
         self.compute_control_frame.grid_columnconfigure(0, weight=1)
         self.compute_control_frame.grid_rowconfigure(0, weight=1)
         self.compute_control_frame.grid_rowconfigure(1, weight=1)
+        self.compute_control_frame.grid_rowconfigure(2, weight=1)
 
         # Compute Control Selection and Compute Button Frame
         self.compute_selection_frame = tk.Frame(self.compute_control_frame)
@@ -198,8 +200,23 @@ class MainGUI(tk.Tk):
         self.compute_button.grid(row=0, column=2)
 
         # Compute Control Selection and Compute Button Frame
+        self.spinbox_frame = tk.Frame(self.compute_control_frame)
+        self.spinbox_frame.grid(row=1, column=0)
+        self.spinbox_frame.configure(background="red")
+
+        # Team Size Label
+        self.team_size_label = tk.Label(self.spinbox_frame, text="Team Size: ")
+        self.team_size_label.grid(row=0, column=0)
+
+        # Team Size Spinbox
+        self.team_size_spinbox = ttk.Spinbox(self.spinbox_frame, from_=0, to=1000, width=4, state='readonly')
+        self.team_size_spinbox.delete(0, "end")
+        self.team_size_spinbox.insert(0, '1')
+        self.team_size_spinbox.grid(row=0, column=1)
+
+        # Compute Control Selection and Compute Button Frame
         self.compute_bar_frame = tk.Frame(self.compute_control_frame)
-        self.compute_bar_frame.grid(row=1, column=0)
+        self.compute_bar_frame.grid(row=2, column=0)
         self.compute_bar_frame.configure(background="blue")
 
         # Compute Progress Bar
@@ -207,7 +224,7 @@ class MainGUI(tk.Tk):
                                                     orient='horizontal',
                                                     mode='determinate',
                                                     length=200)
-        self.compute_progress_bar.grid(row=1, column=0)
+        self.compute_progress_bar.grid(row=0, column=0)
 
         # Output Label
         self.output_text_title = ttk.Label(self.output_frame, text="Output Result")
@@ -277,7 +294,12 @@ class MainGUI(tk.Tk):
         raw = [x for x in self.input_sheet.get_sheet_data(return_copy=True, get_header=False, get_index=False) if
                x != ['', '', '']]
         self.player_data = {x[0]: int(x[1]) for x in raw}
-        main_compute(self.compute_mode, self.player_data)
+        self.team_size = int(self.team_size_spinbox.get())
+        message = main_compute(self.compute_mode, self.player_data, self.team_size)
+        self.output_text.configure(state="normal")
+        self.output_text.delete('1.0', 'end')
+        self.output_text.insert('end', message)
+        self.output_text.configure(state="disabled")
 
 
 app = MainGUI()
