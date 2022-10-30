@@ -3,7 +3,6 @@ import statistics as stats
 
 
 def main_compute(mode, data, team_size):
-    print(data)
     message = []
     if mode == 0:
         team_list = standard_compute(data, team_size)
