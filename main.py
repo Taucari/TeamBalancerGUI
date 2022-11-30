@@ -25,7 +25,7 @@ class MainGUI(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
 
-        self.compute_options = {0: 'Standard', 1: 'Random'}
+        self.compute_options = {0: 'Standard', 1: 'Random', 2: 'Best of 1Mil'}
         self.compute_mode = 0
         self.team_size = 1
         self.player_data = {}
@@ -188,7 +188,7 @@ class MainGUI(tk.Tk):
                                               justify="center",
                                               state="readonly",
                                               values=[*self.compute_options.values()],
-                                              width=8)
+                                              width=12)
         self.compute_selection.current(0)
         self.compute_selection.grid(row=0, column=1)
 
